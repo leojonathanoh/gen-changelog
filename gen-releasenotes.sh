@@ -4,9 +4,7 @@ set -eu
 usage() {
     cat - <<EOF
 Usage: ./$( basename "$0" ) [OPTIONS]
-Subcommands:
 Options:
-    -r|--repo                       Repository path. If empty, defaults to PWD
     -a|--ref-start                  From git ref. If unspecified:
                                     - If there is no tag: HEAD
                                     - If there is one tag: HEAD
@@ -16,6 +14,8 @@ Options:
                                     - If there is one tag, and -a is the tag: First commit
                                     - If there is one tag, and -a is not the tag: The tag
                                     - If there are two or more repo tags: The second latest tag
+    -o|--output                     Output file name
+    -r|--repo                       Repository path. If empty, defaults to PWD
     -h|--help                       Help
     -v|--verbose                    Verbose
 Examples:
@@ -39,6 +39,11 @@ while test $# -gt 0; do
         -b|--ref-end)
             shift
             REF_END="$1"
+            shift
+            ;;
+        -o|--output)
+            shift
+            OUTPUT="$1"
             shift
             ;;
         -r|--repo)
@@ -65,6 +70,7 @@ done
 REF_START=${REF_START:-HEAD}
 REF_END=${REF_END:-}
 REPO=${REPO:-$PWD}
+OUTPUT=${OUTPUT:-changelog.md}
 
 # Validation
 if [ ! -d "$REPO" ]; then
@@ -153,6 +159,6 @@ COMMITS=$( git --no-pager log "$RANGE" --format="%B" --oneline --no-decorate )
 COMMITS_MERGES=$( git --no-pager log "$RANGE" --format="%B" --oneline --no-decorate --merges )
 COMMITS_NOMERGES=$( git --no-pager log "$RANGE" --format="%B" --oneline --no-decorate --no-merges )
 
-echo "Generating release notes: $REPO/changelog.md"
-echo "$COMMITS" > "$REPO/changelog.md"
-cat "$REPO/changelog.md"
+echo "Generating release notes: $REPO/$OUTPUT"
+echo "$COMMITS" > "$REPO/$OUTPUT"
+cat "$REPO/$OUTPUT"

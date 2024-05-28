@@ -104,3 +104,15 @@ teardown() {
     cat "$REPO/changelog.md" | grep -E 'First commit|Second commit|Third commit'
     [ "$( cat "$REPO/changelog.md" | wc -l )" = 3 ]
 }
+@test "Generates release notes: Using --output" {
+    cd "$REPO"
+    git init -b master
+    git commit --allow-empty -m 'First commit'
+    git commit --allow-empty -m 'Second commit'
+    git commit --allow-empty -m 'Third commit'
+
+    run "$BATS_TEST_DIRNAME/gen-releasenotes.sh" --output somefile.md
+    [ "$status" = 0 ]
+    cat "$REPO/somefile.md" | grep -E 'First commit|Second commit|Third commit'
+    [ "$( cat "$REPO/somefile.md" | wc -l )" = 3 ]
+}
