@@ -6,14 +6,27 @@ usage() {
 Usage: ./$( basename "$0" ) [OPTIONS]
 Subcommands:
 Options:
-    -r|--repo                 Repo
-    -v|--verbose              Verbose
+    -r|--repo                       Repository path. If empty, defaults to PWD
+    -a|--ref-start                  From git ref. If unspecified:
+                                    - If there is no tag: HEAD
+                                    - If there is one tag: HEAD
+                                    - If there are two or more repo tags: The latest tag
+    -b|--ref-end                    To git ref. If unspecified:
+                                    - If there is no tag: First commit
+                                    - If there is one tag, and -a is the tag: First commit
+                                    - If there is one tag, and -a is not the tag: The tag
+                                    - If there are two or more repo tags: The second latest tag
+    -h|--help                       Help
+    -v|--verbose                    Verbose
 Examples:
+  cd repo
+  ./$( basename "$0" )
+  ./$( basename "$0" ) -a someref -b someref2
 EOF
 }
 
 # Exit if we got no options
-if [ $# -eq 0 ]; then usage; exit 1; fi
+# if [ $# -eq 0 ]; then usage; exit 1; fi
 
 # Get some options
 while test $# -gt 0; do
@@ -51,7 +64,7 @@ done
 # Configuration
 REF_START=${REF_START:-HEAD}
 REF_END=${REF_END:-}
-REPO=${REPO:?err}
+REPO=${REPO:-$PWD}
 
 # Validation
 if [ ! -d "$REPO" ]; then
@@ -60,43 +73,44 @@ if [ ! -d "$REPO" ]; then
 fi
 
 cd "$REPO"
-echo "REPO=$REPO"
+# echo "REPO=$REPO"
 
 # Get tags
 TAGS=$( git --no-pager tag -l --sort=-version:refname )
 TAGS_COUNT=0
 if [ -n "$TAGS" ]; then
-    echo "$TAGS" | wc -l
+    TAGS_COUNT=$( echo "$TAGS" | wc -l )
 fi
 echo "Found $TAGS_COUNT tags"
-echo "TAGS=$TAGS"
+# echo "TAGS=$TAGS"
 
 # Determine ref range
 if [ "$TAGS_COUNT" = 0 ]; then
     REF_START="$REF_START"
-    REF_END=$( git --no-pager log --oneline --no-decorate --reverse --format='%h' | head -n1 )  # First commit's ref
+    REF_END=  # Until first commit
     RANGE="$REF_START"
-    echo "No tag found. Will parse between $REF_START and $REF_END"
+    echo "No tag found. Git log range: $RANGE"
 elif [ "$TAGS_COUNT" = 1 ]; then
     if [ "$REF_START" = "$( echo "$TAGS" | head -n1 )" ]; then
-        REF_START="$REF_START"
-        REF_END=$( git --no-pager log --oneline --no-decorate --reverse -1 --format='%h' | head -n1 )  # First commit's ref
+        REF_START="$REF_START"  # Latest tag
+        REF_END=  # Until first commit
+        RANGE="$REF_START"
     else
-        REF_START="$REF_START"
-        REF_END=$( echo "$TAGS" | head -n1 )
+        REF_START="$REF_START"  # Ref
+        REF_END=$( echo "$TAGS" | head -n1 ) # Latest tag
+        RANGE="$REF_START...$REF_END"
     fi
-    RANGE="$REF_START...$REF_END"
-    echo "1 tag found. Will parse between $REF_START and $REF_END"
+    echo "1 tag found. Git log range: $RANGE"
 elif [ "$TAGS_COUNT" -gt 1 ]; then
     if [ "$REF_START" = "$( echo "$TAGS" | head -n1 )" ]; then
-        REF_START="$REF_START"
+        REF_START="$REF_START"  # Latest tag
         REF_END=$( echo "$TAGS" | head -n2 | tail -n1 ) # Second most recent tag
     else
-        REF_START="$REF_START"
-        REF_END=$( echo "$TAGS" | head -n1 )
+        REF_START="$REF_START"  # Ref
+        REF_END=$( echo "$TAGS" | head -n1 ) # Latest tag
     fi
     RANGE="$REF_START...$REF_END"
-    echo "2 or more tags found. Will parse between $REF_START and $REF_END"
+    echo "2 or more tag found. Git log range: $RANGE"
 fi
 
 # echo "REF_START=$REF_START"
@@ -141,3 +155,4 @@ COMMITS_NOMERGES=$( git --no-pager log "$RANGE" --format="%B" --oneline --no-dec
 
 echo "Generating release notes: $REPO/changelog.md"
 echo "$COMMITS" > "$REPO/changelog.md"
+cat "$REPO/changelog.md"
