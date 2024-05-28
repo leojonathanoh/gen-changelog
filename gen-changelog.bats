@@ -7,9 +7,9 @@ teardown() {
 }
 
 @test "Prints usage" {
-    run ./gen-releasenotes.sh --help
+    run ./gen-changelog.sh --help
     [ "$status" = 0 ]
-    echo "$output" | grep gen-releasenotes.sh
+    echo "$output" | grep gen-changelog.sh
 }
 @test "Generates release notes: No tag - All commits" {
     cd "$REPO"
@@ -18,7 +18,7 @@ teardown() {
     git commit --allow-empty -m 'Second commit'
     git commit --allow-empty -m 'Third commit'
 
-    run "$BATS_TEST_DIRNAME/gen-releasenotes.sh"
+    run "$BATS_TEST_DIRNAME/gen-changelog.sh"
     [ "$status" = 0 ]
     cat "$REPO/changelog.md" | grep -E 'First commit|Second commit|Third commit'
     [ "$( cat "$REPO/changelog.md" | wc -l )" = 3 ]
@@ -32,7 +32,7 @@ teardown() {
     SHA_SECOND_COMMIT=$( git --no-pager log --oneline --no-decorate --reverse --format='%h' | head -n2 | tail -n1 )
     SHA_FIRST_COMMIT=$( git --no-pager log --oneline --no-decorate --reverse --format='%h' | head -n1 )
 
-    run "$BATS_TEST_DIRNAME/gen-releasenotes.sh" -a "$SHA_SECOND_COMMIT" -b "$SHA_FIRST_COMMIT"
+    run "$BATS_TEST_DIRNAME/gen-changelog.sh" -a "$SHA_SECOND_COMMIT" -b "$SHA_FIRST_COMMIT"
     [ "$status" = 0 ]
     cat "$REPO/changelog.md" | grep -E 'First commit|Second commit'
     [ "$( cat "$REPO/changelog.md" | wc -l )" = 2 ]
@@ -45,7 +45,7 @@ teardown() {
     git commit --allow-empty -m 'Second commit'
     git commit --allow-empty -m 'Third commit'
 
-    run "$BATS_TEST_DIRNAME/gen-releasenotes.sh"
+    run "$BATS_TEST_DIRNAME/gen-changelog.sh"
     [ "$status" = 0 ]
     cat "$REPO/changelog.md" | grep -E 'Second commit|Third commit'
     [ "$( cat "$REPO/changelog.md" | wc -l )" = 2 ]
@@ -58,7 +58,7 @@ teardown() {
     git commit --allow-empty -m 'Third commit'
     git tag v0.1.0
 
-    run "$BATS_TEST_DIRNAME/gen-releasenotes.sh" -a v0.1.0
+    run "$BATS_TEST_DIRNAME/gen-changelog.sh" -a v0.1.0
     [ "$status" = 0 ]
     cat "$REPO/changelog.md" | grep -E 'First commit|Second commit|Third commit'
     [ "$( cat "$REPO/changelog.md" | wc -l )" = 3 ]
@@ -72,7 +72,7 @@ teardown() {
     git tag v0.2.0
     git commit --allow-empty -m 'Third commit'
 
-    run "$BATS_TEST_DIRNAME/gen-releasenotes.sh"
+    run "$BATS_TEST_DIRNAME/gen-changelog.sh"
     [ "$status" = 0 ]
     cat "$REPO/changelog.md" | grep -E 'Third commit'
     [ "$( cat "$REPO/changelog.md" | wc -l )" = 1 ]
@@ -86,7 +86,7 @@ teardown() {
     git tag v0.2.0
     git commit --allow-empty -m 'Third commit'
 
-    run "$BATS_TEST_DIRNAME/gen-releasenotes.sh" -a v0.2.0 -b v0.1.0
+    run "$BATS_TEST_DIRNAME/gen-changelog.sh" -a v0.2.0 -b v0.1.0
     [ "$status" = 0 ]
     cat "$REPO/changelog.md" | grep -E 'Second commit'
     [ "$( cat "$REPO/changelog.md" | wc -l )" = 1 ]
@@ -99,7 +99,7 @@ teardown() {
     git commit --allow-empty -m 'Third commit'
     cd -
 
-    run "$BATS_TEST_DIRNAME/gen-releasenotes.sh" --repo "$REPO"
+    run "$BATS_TEST_DIRNAME/gen-changelog.sh" --repo "$REPO"
     [ "$status" = 0 ]
     cat "$REPO/changelog.md" | grep -E 'First commit|Second commit|Third commit'
     [ "$( cat "$REPO/changelog.md" | wc -l )" = 3 ]
@@ -111,7 +111,7 @@ teardown() {
     git commit --allow-empty -m 'Second commit'
     git commit --allow-empty -m 'Third commit'
 
-    run "$BATS_TEST_DIRNAME/gen-releasenotes.sh" --output somefile.md
+    run "$BATS_TEST_DIRNAME/gen-changelog.sh" --output somefile.md
     [ "$status" = 0 ]
     cat "$REPO/somefile.md" | grep -E 'First commit|Second commit|Third commit'
     [ "$( cat "$REPO/somefile.md" | wc -l )" = 3 ]

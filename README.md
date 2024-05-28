@@ -1,4 +1,4 @@
-# gen-releasenotes
+# gen-changelog
 
 A tool to generate a changelog.
 
@@ -6,6 +6,6 @@ A tool to generate a changelog.
 
 ```sh
 cd /repo
-./gen-releasenotes.sh
+./gen-changelog.sh
 cat changelog.md
 ```

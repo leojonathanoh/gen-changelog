@@ -6,7 +6,7 @@
         {
             "label": "Test",
             "type": "shell",
-            "command": "bats gen-releasenotes.bats",
+            "command": "bats gen-changelog.bats",
             "group": "build"
         }
     ]
