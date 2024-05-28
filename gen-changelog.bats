@@ -1,5 +1,9 @@
 setup() {
     REPO="$BATS_TEST_TMPDIR/repo"
+    export GIT_AUTHOR_NAME=foo
+    export GIT_AUTHOR_EMAIL=foo@example.com
+    export GIT_COMMITTER_NAME=foo
+    export GIT_COMMITTER_EMAIL=foo@example.com
     mkdir -p "$REPO"
 }
 teardown() {

@@ -13,9 +13,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: bats/bats:1.11.0
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    - name: Install git
+      run: |
+        apk add --no-cache git
+    - name: Ignore git permissions
+      run: |
+        git config --global --add safe.directory "$( pwd )"
     - name: Test
       run: |
-        bats ./gen-changelog.sh
+        bats ./gen-changelog.bats
